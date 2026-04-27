@@ -9,8 +9,8 @@
 
         {% if orders %}
         {% for entry in orders %}
-        {% set order = entry.order %}
-        {% set items = entry.items %}
+        {% set order = entry['order'] %}
+        {% set items = entry['items'] %}
         <div class="order-card fade-in">
             <div class="order-header">
                 <div>
