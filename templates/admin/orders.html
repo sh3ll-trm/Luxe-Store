@@ -22,8 +22,8 @@
 </div>
 
 {% for entry in orders %}
-{% set order = entry.order %}
-{% set items = entry.items %}
+{% set order = entry['order'] %}
+{% set items = entry['items'] %}
 <div class="order-card fade-in" style="margin-bottom: 16px;">
     <div class="order-header">
         <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
