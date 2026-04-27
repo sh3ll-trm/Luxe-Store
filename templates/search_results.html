@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Search: {{ query }} — LUXE Store{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: 120px; min-height: 100vh;">
+    <div class="container">
+        <h1 class="section-title fade-in">Search Results</h1>
+        <p class="section-subtitle fade-in">
+            {% if query %}
+            {{ results|length }} result{{ 's' if results|length != 1 }} for "<strong>{{ query }}</strong>"
+            {% else %}
+            Enter a search term to find products
+            {% endif %}
+        </p>
+
+        <!-- Search Bar -->
+        <div style="max-width: 500px; margin-bottom: 40px;" class="fade-in">
+            <form action="{{ url_for('search') }}" method="GET" style="display: flex; gap: 10px;">
+                <input type="text" name="q" class="form-input" value="{{ query }}" placeholder="Search products..." autofocus>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+        </div>
+
+        {% if results %}
+        <div class="products-grid">
+            {% for product in results %}
+            <div class="product-card fade-in">
+                <div class="product-card-img">
+                    <img src="{{ product.image }}" alt="{{ product.name }}" loading="lazy">
+                    <div class="product-card-actions">
+                        {% if session.get('user_id') %}
+                        <form action="{{ url_for('cart_add') }}" method="POST">
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="add-to-cart-btn" title="Add to Cart">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="product-card-body">
+                    {% if product.category_name %}
+                    <div class="product-card-category">{{ product.category_name }}</div>
+                    {% endif %}
+                    <h3 class="product-card-name">
+                        <a href="{{ url_for('product_detail', product_id=product.id) }}">{{ product.name }}</a>
+                    </h3>
+                    <p class="product-card-desc">{{ product.description }}</p>
+                    <div class="product-card-footer">
+                        <span class="product-card-price">${{ "%.2f"|format(product.price) }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% elif query %}
+        <div class="empty-state fade-in">
+            <i class="fas fa-search"></i>
+            <h3>No products found</h3>
+            <p>Try different keywords or browse our categories.</p>
+            <a href="{{ url_for('products') }}" class="btn btn-primary">Browse Products</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

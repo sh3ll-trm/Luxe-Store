@@ -1,0 +1,66 @@
+{% extends "admin/base.html" %}
+{% block title %}Manage Users{% endblock %}
+
+{% block admin_content %}
+<div class="admin-page-header">
+    <div>
+        <h1>Users</h1>
+        <p>Manage registered users</p>
+    </div>
+</div>
+
+<div class="admin-table-wrapper fade-in">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Orders</th>
+                <th>Status</th>
+                <th>Joined</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td style="color: var(--text-muted);">#{{ user.id }}</td>
+                <td style="font-weight: 600; color: var(--text-primary);">
+                    <i class="fas fa-user-circle" style="margin-right: 6px; color: var(--accent-primary);"></i>
+                    {{ user.username }}
+                </td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.order_count }}</td>
+                <td>
+                    {% if user.is_banned %}
+                    <span class="order-status cancelled">Banned</span>
+                    {% else %}
+                    <span class="order-status delivered">Active</span>
+                    {% endif %}
+                </td>
+                <td style="color: var(--text-muted); font-size: 0.85rem;">{{ user.created_at }}</td>
+                <td>
+                    <form action="{{ url_for('admin_toggle_ban', user_id=user.id) }}" method="POST">
+                        {% if user.is_banned %}
+                        <button type="submit" class="btn btn-success btn-sm" title="Unban User">
+                            <i class="fas fa-check"></i> Unban
+                        </button>
+                        {% else %}
+                        <button type="submit" class="btn btn-danger btn-sm" title="Ban User"
+                                onclick="return confirm('Ban this user?');">
+                            <i class="fas fa-ban"></i> Ban
+                        </button>
+                        {% endif %}
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">No users yet</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

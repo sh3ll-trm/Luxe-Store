@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Log In — LUXE Store{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card fade-in">
+        <h1>Welcome Back</h1>
+        <p class="auth-subtitle">Log in to your LUXE account</p>
+        <form action="{{ url_for('login') }}" method="POST">
+            <div class="form-group">
+                <label class="form-label">Username or Email</label>
+                <input type="text" name="username" class="form-input" placeholder="Enter your username or email" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-input" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full btn-lg">
+                <i class="fas fa-sign-in-alt"></i> Log In
+            </button>
+        </form>
+        <p class="auth-footer">
+            Don't have an account? <a href="{{ url_for('register') }}">Sign up</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}{% endblock %}

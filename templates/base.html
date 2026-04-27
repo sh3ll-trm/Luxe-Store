@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="LUXE Store — Premium online shopping experience with curated products, fast shipping, and exceptional quality.">
+    <title>{% block title %}LUXE Store{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar" id="mainNavbar">
+        <div class="navbar-inner">
+            <a href="{{ url_for('index') }}" class="nav-logo">
+                <i class="fas fa-gem"></i> LUXE
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active{% endif %}">Home</a></li>
+                <li><a href="{{ url_for('products') }}" class="{% if request.endpoint == 'products' %}active{% endif %}">Shop</a></li>
+                {% for cat in all_categories[:4] %}
+                <li><a href="{{ url_for('products', category=cat.id) }}">{{ cat.name }}</a></li>
+                {% endfor %}
+            </ul>
+
+            <div class="nav-search">
+                <i class="fas fa-search"></i>
+                <form action="{{ url_for('search') }}" method="GET">
+                    <input type="text" name="q" id="navSearchInput" placeholder="Search products..." autocomplete="off">
+                </form>
+                <div class="search-dropdown" id="searchDropdown"></div>
+            </div>
+
+            <div class="nav-actions">
+                {% if session.get('user_id') %}
+                <a href="{{ url_for('wishlist') }}" class="nav-icon-btn" title="Wishlist">
+                    <i class="fas fa-heart"></i>
+                    {% if wishlist_count > 0 %}
+                    <span class="nav-badge wishlist-badge-count">{{ wishlist_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="{{ url_for('cart') }}" class="nav-icon-btn" title="Cart">
+                    <i class="fas fa-shopping-bag"></i>
+                    {% if cart_count > 0 %}
+                    <span class="nav-badge cart-badge-count">{{ cart_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="{{ url_for('profile') }}" class="nav-user-btn">
+                    <i class="fas fa-user-circle"></i> {{ session.get('username', 'Account') }}
+                </a>
+                {% else %}
+                <a href="{{ url_for('login') }}" class="btn btn-outline btn-sm">Log In</a>
+                <a href="{{ url_for('register') }}" class="btn btn-primary btn-sm">Sign Up</a>
+                {% endif %}
+            </div>
+
+            <button class="nav-toggle" aria-label="Toggle menu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="{{ url_for('index') }}">Home</a>
+        <a href="{{ url_for('products') }}">Shop</a>
+        {% for cat in all_categories %}
+        <a href="{{ url_for('products', category=cat.id) }}">{{ cat.icon }} {{ cat.name }}</a>
+        {% endfor %}
+        <a href="{{ url_for('search') }}">Search</a>
+        {% if session.get('user_id') %}
+        <a href="{{ url_for('cart') }}">🛒 Cart ({{ cart_count }})</a>
+        <a href="{{ url_for('wishlist') }}">❤️ Wishlist ({{ wishlist_count }})</a>
+        <a href="{{ url_for('orders') }}">📦 Orders</a>
+        <a href="{{ url_for('profile') }}">👤 Profile</a>
+        <a href="{{ url_for('logout') }}">🚪 Log Out</a>
+        {% else %}
+        <a href="{{ url_for('login') }}">Log In</a>
+        <a href="{{ url_for('register') }}">Sign Up</a>
+        {% endif %}
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="flash-msg {{ category }}">
+            {% if category == 'success' %}<i class="fas fa-check-circle"></i>
+            {% elif category == 'error' %}<i class="fas fa-exclamation-circle"></i>
+            {% elif category == 'warning' %}<i class="fas fa-exclamation-triangle"></i>
+            {% else %}<i class="fas fa-info-circle"></i>{% endif %}
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    {% block content %}{% endblock %}
+
+    <!-- Footer -->
+    {% block footer %}
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <h3><i class="fas fa-gem"></i> LUXE Store</h3>
+                    <p>Premium online shopping experience with curated products, fast shipping, and exceptional quality.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="{{ url_for('products') }}">All Products</a></li>
+                        {% for cat in all_categories[:4] %}
+                        <li><a href="{{ url_for('products', category=cat.id) }}">{{ cat.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Account</h4>
+                    <ul>
+                        <li><a href="{{ url_for('profile') }}">My Profile</a></li>
+                        <li><a href="{{ url_for('orders') }}">My Orders</a></li>
+                        <li><a href="{{ url_for('wishlist') }}">Wishlist</a></li>
+                        <li><a href="{{ url_for('cart') }}">Cart</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Shipping Info</a></li>
+                        <li><a href="#">Returns</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 LUXE Store. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    {% endblock %}
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

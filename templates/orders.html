@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}My Orders — LUXE Store{% endblock %}
+
+{% block content %}
+<section class="orders-page">
+    <div class="container">
+        <h1 class="section-title fade-in">My Orders</h1>
+        <p class="section-subtitle fade-in">Track and manage your orders</p>
+
+        {% if orders %}
+        {% for entry in orders %}
+        {% set order = entry.order %}
+        {% set items = entry.items %}
+        <div class="order-card fade-in">
+            <div class="order-header">
+                <div>
+                    <span class="order-id">Order #{{ order.id }}</span>
+                    <span class="order-date" style="margin-left: 16px;">{{ order.created_at }}</span>
+                </div>
+                <span class="order-status {{ order.status|lower }}">{{ order.status }}</span>
+            </div>
+            <div class="order-items-list">
+                {% for item in items %}
+                <div class="order-item">
+                    <div class="order-item-img">
+                        <img src="{{ item.image }}" alt="{{ item.name }}">
+                    </div>
+                    <div class="order-item-info">
+                        <div class="order-item-name">{{ item.name }}</div>
+                        <div class="order-item-qty">Qty: {{ item.quantity }} × ${{ "%.2f"|format(item.price) }}</div>
+                    </div>
+                    <div class="order-item-price">${{ "%.2f"|format(item.price * item.quantity) }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="order-footer">
+                <div>
+                    {% if order.coupon_code %}
+                    <span style="font-size: 0.8rem; color: var(--success);">
+                        <i class="fas fa-tag"></i> {{ order.coupon_code }} ({{ order.discount }}% off)
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="order-total">
+                    Total: <span style="background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${{ "%.2f"|format(order.total) }}</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-state fade-in">
+            <i class="fas fa-box-open"></i>
+            <h3>No orders yet</h3>
+            <p>Start shopping and your orders will appear here.</p>
+            <a href="{{ url_for('products') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-shopping-bag"></i> Start Shopping
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Checkout — LUXE Store{% endblock %}
+
+{% block content %}
+<section class="checkout-page">
+    <div class="container">
+        <h1 class="section-title fade-in">Checkout</h1>
+        <p class="section-subtitle fade-in">Complete your order</p>
+
+        <div class="cart-layout">
+            <!-- Shipping Form -->
+            <div class="fade-in">
+                <form action="{{ url_for('checkout') }}" method="POST">
+                    <div class="glass-card" style="padding: 28px; margin-bottom: 24px;">
+                        <h3 style="margin-bottom: 20px;"><i class="fas fa-truck"></i> Shipping Information</h3>
+                        <div class="form-group">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" name="shipping_name" class="form-input" value="{{ user.full_name or '' }}" placeholder="John Doe" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Shipping Address</label>
+                            <textarea name="shipping_address" class="form-textarea" placeholder="123 Main St, City, Country" required>{{ user.address or '' }}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" name="shipping_phone" class="form-input" value="{{ user.phone or '' }}" placeholder="+1 234 567 890" required>
+                        </div>
+                        <input type="hidden" name="coupon_code" id="couponCodeHidden" value="">
+                    </div>
+
+                    <!-- Payment Method Selection -->
+                    <div class="glass-card" style="padding: 28px; margin-bottom: 24px;">
+                        <h3 style="margin-bottom: 20px;"><i class="fas fa-credit-card"></i> Payment Method</h3>
+
+                        {% if stripe_enabled or paypal_enabled %}
+                        <div class="payment-methods">
+                            {% if stripe_enabled %}
+                            <label class="payment-method-option">
+                                <input type="radio" name="payment_method" value="stripe" checked>
+                                <div class="payment-method-card">
+                                    <div class="payment-method-icon stripe-icon">
+                                        <i class="fab fa-stripe" style="font-size: 2rem; color: #635bff;"></i>
+                                    </div>
+                                    <div>
+                                        <div class="payment-method-name">Credit / Debit Card</div>
+                                        <div class="payment-method-desc">Pay securely via Stripe</div>
+                                    </div>
+                                    <div class="payment-method-badges">
+                                        <i class="fab fa-cc-visa" style="font-size: 1.3rem; color: #1a1f71;"></i>
+                                        <i class="fab fa-cc-mastercard" style="font-size: 1.3rem; color: #eb001b;"></i>
+                                        <i class="fab fa-cc-amex" style="font-size: 1.3rem; color: #006fcf;"></i>
+                                    </div>
+                                </div>
+                            </label>
+                            {% endif %}
+
+                            {% if paypal_enabled %}
+                            <label class="payment-method-option">
+                                <input type="radio" name="payment_method" value="paypal" {% if not stripe_enabled %}checked{% endif %}>
+                                <div class="payment-method-card">
+                                    <div class="payment-method-icon paypal-icon">
+                                        <i class="fab fa-paypal" style="font-size: 1.8rem; color: #003087;"></i>
+                                    </div>
+                                    <div>
+                                        <div class="payment-method-name">PayPal</div>
+                                        <div class="payment-method-desc">Pay with your PayPal account</div>
+                                    </div>
+                                    <div class="payment-method-badges">
+                                        <i class="fab fa-paypal" style="font-size: 1.3rem; color: #003087;"></i>
+                                    </div>
+                                </div>
+                            </label>
+                            {% endif %}
+
+                            <label class="payment-method-option">
+                                <input type="radio" name="payment_method" value="none" {% if not stripe_enabled and not paypal_enabled %}checked{% endif %}>
+                                <div class="payment-method-card">
+                                    <div class="payment-method-icon manual-icon">
+                                        <i class="fas fa-money-bill-wave" style="font-size: 1.5rem; color: var(--success);"></i>
+                                    </div>
+                                    <div>
+                                        <div class="payment-method-name">Pay Later / Manual</div>
+                                        <div class="payment-method-desc">Cash on delivery or bank transfer</div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        {% else %}
+                        <div style="padding: 16px; background: var(--bg-glass); border-radius: 10px; color: var(--text-secondary); font-size: 0.9rem;">
+                            <i class="fas fa-info-circle" style="color: var(--info);"></i>
+                            No online payment gateway configured. Your order will be placed as <strong>Pay Later / Manual</strong>.
+                        </div>
+                        <input type="hidden" name="payment_method" value="none">
+                        {% endif %}
+                    </div>
+
+                    <!-- Order Items -->
+                    <div class="glass-card" style="padding: 28px;">
+                        <h3 style="margin-bottom: 20px;"><i class="fas fa-box"></i> Order Items</h3>
+                        {% for item in items %}
+                        <div class="order-item">
+                            <div class="order-item-img">
+                                <img src="{{ item.image }}" alt="{{ item.name }}">
+                            </div>
+                            <div class="order-item-info">
+                                <div class="order-item-name">{{ item.name }}</div>
+                                <div class="order-item-qty">Qty: {{ item.quantity }}</div>
+                            </div>
+                            <div class="order-item-price">${{ "%.2f"|format(item.price * item.quantity) }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full btn-lg" style="margin-top: 24px;">
+                        <i class="fas fa-lock"></i> Place Order
+                    </button>
+                </form>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="cart-summary fade-in">
+                <h3><i class="fas fa-receipt"></i> Order Summary</h3>
+                <div class="cart-summary-row">
+                    <span>Subtotal ({{ items|length }} items)</span>
+                    <span id="checkout-subtotal" data-value="{{ subtotal }}">${{ "%.2f"|format(subtotal) }}</span>
+                </div>
+                <div class="cart-summary-row">
+                    <span>Shipping</span>
+                    <span style="color: var(--success);">Free</span>
+                </div>
+                <div class="cart-summary-row" id="discount-row" style="display: none; color: var(--success);">
+                    <span>Discount</span>
+                    <span id="discount-amount"></span>
+                </div>
+                <div class="cart-summary-total">
+                    <span>Total</span>
+                    <span class="amount" id="checkout-total">${{ "%.2f"|format(subtotal) }}</span>
+                </div>
+
+                <!-- Coupon -->
+                <div style="margin-top: 20px;">
+                    <label class="form-label">Have a coupon?</label>
+                    <div class="coupon-form">
+                        <input type="text" id="couponCodeInput" placeholder="Enter code" style="text-transform: uppercase;">
+                        <button type="button" id="applyCouponBtn" class="btn btn-outline btn-sm">Apply</button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 0.85rem; color: var(--text-muted);">
+                        <i class="fas fa-shield-alt" style="color: var(--success);"></i> Secure checkout
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 0.85rem; color: var(--text-muted);">
+                        <i class="fas fa-undo" style="color: var(--info);"></i> 30-day returns
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-muted);">
+                        <i class="fas fa-truck" style="color: var(--accent-secondary);"></i> Free shipping
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

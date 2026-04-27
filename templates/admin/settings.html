@@ -1,0 +1,108 @@
+{% extends "admin/base.html" %}
+{% block title %}Payment Settings{% endblock %}
+
+{% block admin_content %}
+<div class="admin-page-header">
+    <div>
+        <h1>Payment Settings</h1>
+        <p>Configure Stripe, PayPal, and currency settings</p>
+    </div>
+</div>
+
+<form action="{{ url_for('admin_settings') }}" method="POST">
+    <!-- Currency -->
+    <div class="glass-card fade-in" style="padding: 28px; margin-bottom: 24px;">
+        <h3 style="margin-bottom: 20px;"><i class="fas fa-globe" style="color: var(--accent-secondary);"></i> General</h3>
+        <div class="form-group">
+            <label class="form-label">Store Currency</label>
+            <select name="store_currency" class="form-select" style="max-width: 300px;">
+                <option value="usd" {% if settings.get('store_currency') == 'usd' %}selected{% endif %}>USD — US Dollar</option>
+                <option value="eur" {% if settings.get('store_currency') == 'eur' %}selected{% endif %}>EUR — Euro</option>
+                <option value="gbp" {% if settings.get('store_currency') == 'gbp' %}selected{% endif %}>GBP — British Pound</option>
+                <option value="cad" {% if settings.get('store_currency') == 'cad' %}selected{% endif %}>CAD — Canadian Dollar</option>
+                <option value="aud" {% if settings.get('store_currency') == 'aud' %}selected{% endif %}>AUD — Australian Dollar</option>
+                <option value="jpy" {% if settings.get('store_currency') == 'jpy' %}selected{% endif %}>JPY — Japanese Yen</option>
+                <option value="inr" {% if settings.get('store_currency') == 'inr' %}selected{% endif %}>INR — Indian Rupee</option>
+                <option value="brl" {% if settings.get('store_currency') == 'brl' %}selected{% endif %}>BRL — Brazilian Real</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Stripe -->
+    <div class="glass-card fade-in fade-in-delay-1" style="padding: 28px; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+            <h3><i class="fab fa-stripe" style="color: #635bff; font-size: 1.4rem;"></i> Stripe Payment</h3>
+            <div class="form-check">
+                <input type="checkbox" name="stripe_enabled" id="stripeEnabled"
+                       {% if settings.get('stripe_enabled') == '1' %}checked{% endif %}>
+                <label for="stripeEnabled" class="form-label" style="margin-bottom: 0;">Enable Stripe</label>
+            </div>
+        </div>
+        <div id="stripeFields">
+            <div class="form-group">
+                <label class="form-label">Publishable Key</label>
+                <input type="text" name="stripe_publishable_key" class="form-input"
+                       value="{{ settings.get('stripe_publishable_key', '') }}"
+                       placeholder="pk_test_... or pk_live_...">
+                <small style="color: var(--text-muted); font-size: 0.78rem; margin-top: 6px; display: block;">
+                    Starts with <code>pk_test_</code> (test mode) or <code>pk_live_</code> (live mode)
+                </small>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Secret Key</label>
+                <input type="password" name="stripe_secret_key" class="form-input"
+                       value="{{ settings.get('stripe_secret_key', '') }}"
+                       placeholder="sk_test_... or sk_live_...">
+                <small style="color: var(--text-muted); font-size: 0.78rem; margin-top: 6px; display: block;">
+                    Starts with <code>sk_test_</code> (test mode) or <code>sk_live_</code> (live mode). Keep this secret!
+                </small>
+            </div>
+            <div style="padding: 14px 16px; background: rgba(99, 91, 255, 0.1); border: 1px solid rgba(99, 91, 255, 0.2); border-radius: 10px; font-size: 0.85rem; color: var(--text-secondary);">
+                <i class="fas fa-info-circle" style="color: #635bff;"></i>
+                Get your keys from <a href="https://dashboard.stripe.com/apikeys" target="_blank" style="color: #635bff;">Stripe Dashboard → API Keys</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- PayPal -->
+    <div class="glass-card fade-in fade-in-delay-2" style="padding: 28px; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+            <h3><i class="fab fa-paypal" style="color: #003087; font-size: 1.3rem;"></i> PayPal Payment</h3>
+            <div class="form-check">
+                <input type="checkbox" name="paypal_enabled" id="paypalEnabled"
+                       {% if settings.get('paypal_enabled') == '1' %}checked{% endif %}>
+                <label for="paypalEnabled" class="form-label" style="margin-bottom: 0;">Enable PayPal</label>
+            </div>
+        </div>
+        <div id="paypalFields">
+            <div class="form-group">
+                <label class="form-label">Client ID</label>
+                <input type="text" name="paypal_client_id" class="form-input"
+                       value="{{ settings.get('paypal_client_id', '') }}"
+                       placeholder="Your PayPal Client ID">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Client Secret</label>
+                <input type="password" name="paypal_client_secret" class="form-input"
+                       value="{{ settings.get('paypal_client_secret', '') }}"
+                       placeholder="Your PayPal Client Secret">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Mode</label>
+                <select name="paypal_mode" class="form-select" style="max-width: 200px;">
+                    <option value="sandbox" {% if settings.get('paypal_mode') == 'sandbox' %}selected{% endif %}>Sandbox (Test)</option>
+                    <option value="live" {% if settings.get('paypal_mode') == 'live' %}selected{% endif %}>Live (Production)</option>
+                </select>
+            </div>
+            <div style="padding: 14px 16px; background: rgba(0, 48, 135, 0.1); border: 1px solid rgba(0, 48, 135, 0.2); border-radius: 10px; font-size: 0.85rem; color: var(--text-secondary);">
+                <i class="fas fa-info-circle" style="color: #003087;"></i>
+                Get your credentials from <a href="https://developer.paypal.com/dashboard/applications" target="_blank" style="color: #00b4d8;">PayPal Developer Dashboard → Apps & Credentials</a>
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-lg">
+        <i class="fas fa-save"></i> Save Settings
+    </button>
+</form>
+{% endblock %}

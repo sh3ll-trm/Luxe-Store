@@ -1,0 +1,102 @@
+{% extends "admin/base.html" %}
+{% block title %}Manage Categories{% endblock %}
+
+{% block admin_content %}
+<div class="admin-page-header">
+    <div>
+        <h1>Categories</h1>
+        <p>Organize your products into categories</p>
+    </div>
+    <button class="btn btn-primary" data-modal="addCategoryModal">
+        <i class="fas fa-plus"></i> Add Category
+    </button>
+</div>
+
+<div class="admin-table-wrapper fade-in">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Icon</th>
+                <th>Name</th>
+                <th>Products</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cat in categories %}
+            <tr>
+                <td style="font-size: 1.5rem;">{{ cat.icon }}</td>
+                <td style="font-weight: 600; color: var(--text-primary);">{{ cat.name }}</td>
+                <td>{{ cat.product_count }} products</td>
+                <td style="color: var(--text-muted); font-size: 0.85rem;">{{ cat.created_at }}</td>
+                <td>
+                    <div class="table-actions">
+                        <button class="btn btn-outline btn-sm edit-category-btn"
+                            data-id="{{ cat.id }}"
+                            data-name="{{ cat.name }}"
+                            data-icon="{{ cat.icon }}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <form action="{{ url_for('admin_delete_category', cat_id=cat.id) }}" method="POST"
+                              onsubmit="return confirm('Delete this category? Products will become uncategorized.');">
+                            <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-muted);">No categories yet</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Add Category Modal -->
+<div class="modal-overlay" id="addCategoryModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Add Category</h2>
+            <button class="modal-close"><i class="fas fa-times"></i></button>
+        </div>
+        <form action="{{ url_for('admin_add_category') }}" method="POST">
+            <div class="form-group">
+                <label class="form-label">Category Name</label>
+                <input type="text" name="name" class="form-input" placeholder="e.g. Electronics" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Icon (emoji)</label>
+                <input type="text" name="icon" class="form-input" value="📦" placeholder="📦">
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">
+                <i class="fas fa-plus"></i> Add Category
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Category Modal -->
+<div class="modal-overlay" id="editCategoryModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Edit Category</h2>
+            <button class="modal-close"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="editCategoryForm" method="POST">
+            <div class="form-group">
+                <label class="form-label">Category Name</label>
+                <input type="text" name="name" id="editCategoryName" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Icon (emoji)</label>
+                <input type="text" name="icon" id="editCategoryIcon" class="form-input">
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

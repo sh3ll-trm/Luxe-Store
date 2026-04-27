@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Wishlist — LUXE Store{% endblock %}
+
+{% block content %}
+<section class="wishlist-page">
+    <div class="container">
+        <h1 class="section-title fade-in">My Wishlist</h1>
+        <p class="section-subtitle fade-in">Products you've saved for later</p>
+
+        {% if items %}
+        <div class="wishlist-grid">
+            {% for item in items %}
+            <div class="product-card fade-in">
+                <div class="product-card-img">
+                    <img src="{{ item.image }}" alt="{{ item.name }}" loading="lazy">
+                    <div class="product-card-actions" style="opacity: 1; transform: none;">
+                        <form action="{{ url_for('wishlist_toggle') }}" method="POST">
+                            <input type="hidden" name="product_id" value="{{ item.id }}">
+                            <button type="submit" title="Remove from Wishlist" style="background: var(--error);">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </form>
+                        <form action="{{ url_for('cart_add') }}" method="POST">
+                            <input type="hidden" name="product_id" value="{{ item.id }}">
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="add-to-cart-btn" title="Add to Cart">
+                                <i class="fas fa-shopping-bag"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="product-card-body">
+                    <h3 class="product-card-name">
+                        <a href="{{ url_for('product_detail', product_id=item.id) }}">{{ item.name }}</a>
+                    </h3>
+                    <p class="product-card-desc">{{ item.description }}</p>
+                    <div class="product-card-footer">
+                        <span class="product-card-price">${{ "%.2f"|format(item.price) }}</span>
+                        <form action="{{ url_for('cart_add') }}" method="POST">
+                            <input type="hidden" name="product_id" value="{{ item.id }}">
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="btn btn-primary btn-sm add-to-cart-btn">
+                                <i class="fas fa-plus"></i> Add to Cart
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state fade-in">
+            <i class="fas fa-heart"></i>
+            <h3>Your wishlist is empty</h3>
+            <p>Start saving products you love for later!</p>
+            <a href="{{ url_for('products') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-shopping-bag"></i> Browse Products
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

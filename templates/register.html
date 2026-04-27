@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Sign Up — LUXE Store{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card fade-in">
+        <h1>Create Account</h1>
+        <p class="auth-subtitle">Join LUXE and start shopping</p>
+        <form action="{{ url_for('register') }}" method="POST">
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <input type="text" name="username" class="form-input" placeholder="Choose a username" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" class="form-input" placeholder="you@example.com" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-input" placeholder="Min 6 characters" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm Password</label>
+                    <input type="password" name="confirm_password" class="form-input" placeholder="Repeat password" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full btn-lg">
+                <i class="fas fa-user-plus"></i> Create Account
+            </button>
+        </form>
+        <p class="auth-footer">
+            Already have an account? <a href="{{ url_for('login') }}">Log in</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}{% endblock %}

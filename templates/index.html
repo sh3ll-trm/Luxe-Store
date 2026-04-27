@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}LUXE Store — Premium Online Shopping{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <h1 class="fade-in">Discover <span>Premium</span><br>Products You'll Love</h1>
+        <p class="fade-in fade-in-delay-1">Curated collections of the finest products. Shop the latest trends with confidence and style.</p>
+        <div class="hero-actions fade-in fade-in-delay-2">
+            <a href="{{ url_for('products') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-shopping-bag"></i> Shop Now
+            </a>
+            <a href="#categories" class="btn btn-outline btn-lg">
+                <i class="fas fa-th-large"></i> Browse Categories
+            </a>
+        </div>
+        <div class="hero-stats fade-in fade-in-delay-3">
+            <div class="hero-stat">
+                <div class="hero-stat-number">500+</div>
+                <div class="hero-stat-label">Products</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-number">10K+</div>
+                <div class="hero-stat-label">Happy Customers</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-number">24/7</div>
+                <div class="hero-stat-label">Support</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-number">Free</div>
+                <div class="hero-stat-label">Shipping</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="section" id="categories">
+    <div class="container">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Shop by Category</h2>
+                <p class="section-subtitle">Find exactly what you're looking for</p>
+            </div>
+        </div>
+        <div class="categories-grid">
+            {% for cat in categories %}
+            <a href="{{ url_for('products', category=cat.id) }}" class="category-card animate-on-scroll">
+                <span class="category-card-icon">{{ cat.icon }}</span>
+                <span class="category-card-name">{{ cat.name }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+{% if featured %}
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Featured Products</h2>
+                <p class="section-subtitle">Hand-picked favorites just for you</p>
+            </div>
+            <a href="{{ url_for('products') }}" class="btn btn-outline">
+                View All <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        <div class="products-grid">
+            {% for product in featured %}
+            <div class="product-card animate-on-scroll">
+                <div class="product-card-img">
+                    <img src="{{ product.image }}" alt="{{ product.name }}" loading="lazy">
+                    {% if product.featured %}
+                    <span class="product-card-badge">⭐ Featured</span>
+                    {% endif %}
+                    <div class="product-card-actions">
+                        {% if session.get('user_id') %}
+                        <form action="{{ url_for('wishlist_toggle') }}" method="POST">
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <button type="submit" class="wishlist-toggle-btn" title="Add to Wishlist">
+                                <i class="far fa-heart"></i>
+                            </button>
+                        </form>
+                        <form action="{{ url_for('cart_add') }}" method="POST">
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="add-to-cart-btn" title="Add to Cart">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="product-card-body">
+                    {% if product.category_name %}
+                    <div class="product-card-category">{{ product.category_name }}</div>
+                    {% endif %}
+                    <h3 class="product-card-name">
+                        <a href="{{ url_for('product_detail', product_id=product.id) }}">{{ product.name }}</a>
+                    </h3>
+                    <p class="product-card-desc">{{ product.description }}</p>
+                    <div class="product-card-footer">
+                        <span class="product-card-price">${{ "%.2f"|format(product.price) }}</span>
+                        {% if product.stock > 10 %}
+                        <span class="product-card-stock in-stock">In Stock</span>
+                        {% elif product.stock > 0 %}
+                        <span class="product-card-stock low-stock">Low Stock</span>
+                        {% else %}
+                        <span class="product-card-stock out-of-stock">Out of Stock</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Latest Products -->
+{% if latest %}
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">New Arrivals</h2>
+                <p class="section-subtitle">The latest additions to our collection</p>
+            </div>
+            <a href="{{ url_for('products', sort='newest') }}" class="btn btn-outline">
+                See All New <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        <div class="products-grid">
+            {% for product in latest %}
+            <div class="product-card animate-on-scroll">
+                <div class="product-card-img">
+                    <img src="{{ product.image }}" alt="{{ product.name }}" loading="lazy">
+                    <span class="product-card-badge">🆕 New</span>
+                    <div class="product-card-actions">
+                        {% if session.get('user_id') %}
+                        <form action="{{ url_for('wishlist_toggle') }}" method="POST">
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <button type="submit" class="wishlist-toggle-btn" title="Add to Wishlist">
+                                <i class="far fa-heart"></i>
+                            </button>
+                        </form>
+                        <form action="{{ url_for('cart_add') }}" method="POST">
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="add-to-cart-btn" title="Add to Cart">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="product-card-body">
+                    {% if product.category_name %}
+                    <div class="product-card-category">{{ product.category_name }}</div>
+                    {% endif %}
+                    <h3 class="product-card-name">
+                        <a href="{{ url_for('product_detail', product_id=product.id) }}">{{ product.name }}</a>
+                    </h3>
+                    <p class="product-card-desc">{{ product.description }}</p>
+                    <div class="product-card-footer">
+                        <span class="product-card-price">${{ "%.2f"|format(product.price) }}</span>
+                        {% if product.stock > 10 %}
+                        <span class="product-card-stock in-stock">In Stock</span>
+                        {% elif product.stock > 0 %}
+                        <span class="product-card-stock low-stock">Low Stock</span>
+                        {% else %}
+                        <span class="product-card-stock out-of-stock">Out of Stock</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Shop {% if active_category %}{{ active_category.name }} — {% endif %}LUXE Store{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: 120px;">
+    <div class="container">
+        <div class="section-header">
+            <div>
+                <h1 class="section-title">
+                    {% if active_category %}{{ active_category.icon }} {{ active_category.name }}{% else %}All Products{% endif %}
+                </h1>
+                <p class="section-subtitle">
+                    {% if active_category %}Browse our {{ active_category.name }} collection{% else %}Explore our entire collection{% endif %}
+                </p>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-bar">
+            <div class="filters-left">
+                <a href="{{ url_for('products') }}" class="filter-chip {% if not active_category %}active{% endif %}">All</a>
+                {% for cat in categories %}
+                <a href="{{ url_for('products', category=cat.id, sort=sort) }}" class="filter-chip {% if active_category and active_category.id == cat.id %}active{% endif %}">
+                    {{ cat.icon }} {{ cat.name }}
+                </a>
+                {% endfor %}
+            </div>
+            <div class="filters-right">
+                <label for="sortSelect">Sort by:</label>
+                <select id="sortSelect">
+                    <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest</option>
+                    <option value="price_low" {% if sort == 'price_low' %}selected{% endif %}>Price: Low → High</option>
+                    <option value="price_high" {% if sort == 'price_high' %}selected{% endif %}>Price: High → Low</option>
+                    <option value="name" {% if sort == 'name' %}selected{% endif %}>Name: A → Z</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        {% if products %}
+        <div class="products-grid">
+            {% for product in products %}
+            <div class="product-card animate-on-scroll">
+                <div class="product-card-img">
+                    <img src="{{ product.image }}" alt="{{ product.name }}" loading="lazy">
+                    {% if product.featured %}
+                    <span class="product-card-badge">⭐ Featured</span>
+                    {% endif %}
+                    <div class="product-card-actions">
+                        {% if session.get('user_id') %}
+                        <form action="{{ url_for('wishlist_toggle') }}" method="POST">
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <button type="submit" class="wishlist-toggle-btn" title="Add to Wishlist">
+                                <i class="far fa-heart"></i>
+                            </button>
+                        </form>
+                        <form action="{{ url_for('cart_add') }}" method="POST">
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="add-to-cart-btn" title="Add to Cart">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="product-card-body">
+                    {% if product.category_name %}
+                    <div class="product-card-category">{{ product.category_name }}</div>
+                    {% endif %}
+                    <h3 class="product-card-name">
+                        <a href="{{ url_for('product_detail', product_id=product.id) }}">{{ product.name }}</a>
+                    </h3>
+                    <p class="product-card-desc">{{ product.description }}</p>
+                    <div class="product-card-footer">
+                        <span class="product-card-price">${{ "%.2f"|format(product.price) }}</span>
+                        {% if product.stock > 10 %}
+                        <span class="product-card-stock in-stock">In Stock</span>
+                        {% elif product.stock > 0 %}
+                        <span class="product-card-stock low-stock">Low Stock</span>
+                        {% else %}
+                        <span class="product-card-stock out-of-stock">Out of Stock</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if total_pages > 1 %}
+        <div class="pagination">
+            {% if page > 1 %}
+            <a href="{{ url_for('products', category=active_category.id if active_category else None, sort=sort, page=page-1) }}">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+            {% endif %}
+            {% for p in range(1, total_pages + 1) %}
+            {% if p == page %}
+            <span class="active">{{ p }}</span>
+            {% else %}
+            <a href="{{ url_for('products', category=active_category.id if active_category else None, sort=sort, page=p) }}">{{ p }}</a>
+            {% endif %}
+            {% endfor %}
+            {% if page < total_pages %}
+            <a href="{{ url_for('products', category=active_category.id if active_category else None, sort=sort, page=page+1) }}">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-box-open"></i>
+            <h3>No products found</h3>
+            <p>Try a different category or check back later.</p>
+            <a href="{{ url_for('products') }}" class="btn btn-primary">View All Products</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

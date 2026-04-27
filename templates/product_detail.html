@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} — LUXE Store{% endblock %}
+
+{% block content %}
+<section class="product-detail">
+    <div class="container">
+        <div class="product-detail-grid">
+            <!-- Product Image -->
+            <div class="product-detail-image fade-in">
+                <img src="{{ product.image }}" alt="{{ product.name }}">
+            </div>
+
+            <!-- Product Info -->
+            <div class="product-detail-info">
+                {% if product.category_name %}
+                <div class="product-detail-category fade-in">{{ product.category_name }}</div>
+                {% endif %}
+
+                <h1 class="fade-in fade-in-delay-1">{{ product.name }}</h1>
+
+                <!-- Rating -->
+                {% if avg_rating > 0 %}
+                <div class="stars fade-in fade-in-delay-1" style="margin-bottom: 16px;">
+                    {% for i in range(1, 6) %}
+                        {% if i <= avg_rating|round(0, 'floor')|int %}
+                        <i class="fas fa-star"></i>
+                        {% elif i - avg_rating < 1 %}
+                        <i class="fas fa-star-half-alt"></i>
+                        {% else %}
+                        <i class="far fa-star empty"></i>
+                        {% endif %}
+                    {% endfor %}
+                    <span style="color: var(--text-muted); margin-left: 8px; font-size: 0.85rem;">
+                        ({{ reviews|length }} review{{ 's' if reviews|length != 1 }})
+                    </span>
+                </div>
+                {% endif %}
+
+                <div class="product-detail-price fade-in fade-in-delay-2">${{ "%.2f"|format(product.price) }}</div>
+
+                <p class="product-detail-desc fade-in fade-in-delay-2">{{ product.description }}</p>
+
+                <!-- Stock Status -->
+                <div class="product-detail-stock fade-in fade-in-delay-3">
+                    {% if product.stock > 10 %}
+                    <span class="dot green"></span>
+                    <span style="color: var(--success);">In Stock ({{ product.stock }} available)</span>
+                    {% elif product.stock > 0 %}
+                    <span class="dot orange"></span>
+                    <span style="color: var(--warning);">Low Stock ({{ product.stock }} left)</span>
+                    {% else %}
+                    <span class="dot red"></span>
+                    <span style="color: var(--error);">Out of Stock</span>
+                    {% endif %}
+                </div>
+
+                <!-- Actions -->
+                {% if session.get('user_id') %}
+                <div class="product-detail-actions fade-in fade-in-delay-3">
+                    <form action="{{ url_for('cart_add') }}" method="POST" style="display: flex; gap: 12px; align-items: center;">
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        <div class="quantity-selector">
+                            <button type="button" class="qty-minus">−</button>
+                            <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}">
+                            <button type="button" class="qty-plus">+</button>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg add-to-cart-btn" {% if product.stock == 0 %}disabled{% endif %}>
+                            <i class="fas fa-shopping-bag"></i> Add to Cart
+                        </button>
+                    </form>
+                    <form action="{{ url_for('wishlist_toggle') }}" method="POST">
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        <button type="submit" class="btn btn-outline btn-lg wishlist-toggle-btn {% if in_wishlist %}active{% endif %}">
+                            <i class="{% if in_wishlist %}fas{% else %}far{% endif %} fa-heart"></i>
+                            {{ 'In Wishlist' if in_wishlist else 'Add to Wishlist' }}
+                        </button>
+                    </form>
+                </div>
+                {% else %}
+                <div class="fade-in fade-in-delay-3" style="margin-bottom: 32px;">
+                    <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-sign-in-alt"></i> Log in to Purchase
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Reviews Section -->
+        <div class="section" style="padding-top: 48px;">
+            <h2 class="section-title">Customer Reviews</h2>
+            <p class="section-subtitle">What our customers are saying</p>
+
+            {% if session.get('user_id') %}
+            <div class="review-card" style="margin-bottom: 24px;">
+                <h3 style="margin-bottom: 16px;">Write a Review</h3>
+                <form action="{{ url_for('add_review') }}" method="POST">
+                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                    <div class="form-group">
+                        <label class="form-label">Rating <span id="ratingDisplay"></span></label>
+                        <div class="star-rating-input">
+                            {% for i in range(5, 0, -1) %}
+                            <input type="radio" name="rating" value="{{ i }}" id="star{{ i }}">
+                            <label for="star{{ i }}"><i class="fas fa-star"></i></label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Your Review</label>
+                        <textarea name="comment" class="form-textarea" placeholder="Share your experience..." rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Submit Review
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+
+            {% if reviews %}
+            <div class="reviews-list">
+                {% for review in reviews %}
+                <div class="review-card">
+                    <div class="review-header">
+                        <div>
+                            <span class="review-author">{{ review.username }}</span>
+                            <div class="stars" style="margin-top: 4px;">
+                                {% for i in range(1, 6) %}
+                                    {% if i <= review.rating %}
+                                    <i class="fas fa-star"></i>
+                                    {% else %}
+                                    <i class="far fa-star empty"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <span class="review-date">{{ review.created_at }}</span>
+                    </div>
+                    {% if review.comment %}
+                    <p class="review-comment">{{ review.comment }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state" style="padding: 40px 20px;">
+                <i class="fas fa-comments"></i>
+                <h3>No reviews yet</h3>
+                <p>Be the first to review this product!</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Related Products -->
+        {% if related %}
+        <div class="section" style="padding-top: 0;">
+            <h2 class="section-title">Related Products</h2>
+            <p class="section-subtitle">You might also like</p>
+            <div class="products-grid">
+                {% for product in related %}
+                <div class="product-card">
+                    <div class="product-card-img">
+                        <img src="{{ product.image }}" alt="{{ product.name }}" loading="lazy">
+                    </div>
+                    <div class="product-card-body">
+                        {% if product.category_name %}
+                        <div class="product-card-category">{{ product.category_name }}</div>
+                        {% endif %}
+                        <h3 class="product-card-name">
+                            <a href="{{ url_for('product_detail', product_id=product.id) }}">{{ product.name }}</a>
+                        </h3>
+                        <div class="product-card-footer">
+                            <span class="product-card-price">${{ "%.2f"|format(product.price) }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

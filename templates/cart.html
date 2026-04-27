@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Shopping Cart — LUXE Store{% endblock %}
+
+{% block content %}
+<section class="cart-page">
+    <div class="container">
+        <h1 class="section-title fade-in">Shopping Cart</h1>
+        <p class="section-subtitle fade-in">Review your items before checkout</p>
+
+        {% if items %}
+        <div class="cart-layout">
+            <div class="cart-items">
+                {% for item in items %}
+                <div class="cart-item fade-in">
+                    <div class="cart-item-img">
+                        <a href="{{ url_for('product_detail', product_id=item.product_id) }}">
+                            <img src="{{ item.image }}" alt="{{ item.name }}">
+                        </a>
+                    </div>
+                    <div class="cart-item-info">
+                        <h3 class="cart-item-name">
+                            <a href="{{ url_for('product_detail', product_id=item.product_id) }}" style="color: var(--text-primary);">{{ item.name }}</a>
+                        </h3>
+                        <div class="cart-item-price">${{ "%.2f"|format(item.price) }}</div>
+                        <div class="cart-item-actions">
+                            <form action="{{ url_for('cart_update') }}" method="POST" class="cart-qty-form">
+                                <input type="hidden" name="item_id" value="{{ item.id }}">
+                                <div class="quantity-selector">
+                                    <button type="button" class="qty-minus">−</button>
+                                    <input type="number" name="quantity" value="{{ item.quantity }}" min="1">
+                                    <button type="button" class="qty-plus">+</button>
+                                </div>
+                            </form>
+                            <form action="{{ url_for('cart_remove', item_id=item.id) }}" method="POST">
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-trash"></i> Remove
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <div style="text-align: right; font-family: var(--font-heading); font-weight: 700; font-size: 1.1rem; color: var(--accent-secondary); min-width: 80px;">
+                        ${{ "%.2f"|format(item.price * item.quantity) }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="cart-summary fade-in">
+                <h3><i class="fas fa-receipt"></i> Order Summary</h3>
+                <div class="cart-summary-row">
+                    <span>Subtotal ({{ items|length }} items)</span>
+                    <span id="cart-subtotal">${{ "%.2f"|format(subtotal) }}</span>
+                </div>
+                <div class="cart-summary-row">
+                    <span>Shipping</span>
+                    <span style="color: var(--success);">Free</span>
+                </div>
+                <div class="cart-summary-total">
+                    <span>Total</span>
+                    <span class="amount">${{ "%.2f"|format(subtotal) }}</span>
+                </div>
+                <a href="{{ url_for('checkout') }}" class="btn btn-primary btn-full" style="margin-top: 20px;">
+                    <i class="fas fa-lock"></i> Proceed to Checkout
+                </a>
+                <a href="{{ url_for('products') }}" class="btn btn-outline btn-full" style="margin-top: 10px;">
+                    <i class="fas fa-arrow-left"></i> Continue Shopping
+                </a>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state fade-in">
+            <i class="fas fa-shopping-bag"></i>
+            <h3>Your cart is empty</h3>
+            <p>Looks like you haven't added any items to your cart yet.</p>
+            <a href="{{ url_for('products') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-shopping-bag"></i> Start Shopping
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

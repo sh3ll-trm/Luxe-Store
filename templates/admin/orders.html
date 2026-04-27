@@ -1,0 +1,87 @@
+{% extends "admin/base.html" %}
+{% block title %}Manage Orders{% endblock %}
+
+{% block admin_content %}
+<div class="admin-page-header">
+    <div>
+        <h1>Orders</h1>
+        <p>Manage and track customer orders</p>
+    </div>
+</div>
+
+<!-- Status Filters -->
+<div class="filters-bar" style="margin-bottom: 24px;">
+    <div class="filters-left">
+        <a href="{{ url_for('admin_orders') }}" class="filter-chip {% if not status_filter %}active{% endif %}">All</a>
+        <a href="{{ url_for('admin_orders', status='Pending') }}" class="filter-chip {% if status_filter == 'Pending' %}active{% endif %}">🟡 Pending</a>
+        <a href="{{ url_for('admin_orders', status='Processing') }}" class="filter-chip {% if status_filter == 'Processing' %}active{% endif %}">🔵 Processing</a>
+        <a href="{{ url_for('admin_orders', status='Shipped') }}" class="filter-chip {% if status_filter == 'Shipped' %}active{% endif %}">🟣 Shipped</a>
+        <a href="{{ url_for('admin_orders', status='Delivered') }}" class="filter-chip {% if status_filter == 'Delivered' %}active{% endif %}">🟢 Delivered</a>
+        <a href="{{ url_for('admin_orders', status='Cancelled') }}" class="filter-chip {% if status_filter == 'Cancelled' %}active{% endif %}">🔴 Cancelled</a>
+    </div>
+</div>
+
+{% for entry in orders %}
+{% set order = entry.order %}
+{% set items = entry.items %}
+<div class="order-card fade-in" style="margin-bottom: 16px;">
+    <div class="order-header">
+        <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+            <span class="order-id">Order #{{ order.id }}</span>
+            <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fas fa-user"></i> {{ order.username }}</span>
+            <span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fas fa-calendar"></i> {{ order.created_at }}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="order-status {{ order.status|lower }}">{{ order.status }}</span>
+            <form action="{{ url_for('admin_update_order', order_id=order.id) }}" method="POST" style="display: flex; gap: 8px;">
+                <select name="status" class="form-select" style="padding: 6px 32px 6px 10px; font-size: 0.8rem; border-radius: 8px;">
+                    <option value="Pending" {% if order.status == 'Pending' %}selected{% endif %}>Pending</option>
+                    <option value="Processing" {% if order.status == 'Processing' %}selected{% endif %}>Processing</option>
+                    <option value="Shipped" {% if order.status == 'Shipped' %}selected{% endif %}>Shipped</option>
+                    <option value="Delivered" {% if order.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                    <option value="Cancelled" {% if order.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                </select>
+                <button type="submit" class="btn btn-primary btn-sm">Update</button>
+            </form>
+        </div>
+    </div>
+    <div class="order-items-list">
+        {% for item in items %}
+        <div class="order-item">
+            <div class="order-item-img">
+                <img src="{{ item.image }}" alt="{{ item.name }}">
+            </div>
+            <div class="order-item-info">
+                <div class="order-item-name">{{ item.name }}</div>
+                <div class="order-item-qty">Qty: {{ item.quantity }} × ${{ "%.2f"|format(item.price) }}</div>
+            </div>
+            <div class="order-item-price">${{ "%.2f"|format(item.price * item.quantity) }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="order-footer">
+        <div>
+            {% if order.shipping_name %}
+            <span style="font-size: 0.85rem; color: var(--text-muted);">
+                <i class="fas fa-map-marker-alt"></i> {{ order.shipping_name }} — {{ order.shipping_address }}
+            </span>
+            {% endif %}
+            {% if order.coupon_code %}
+            <span style="font-size: 0.8rem; color: var(--success); margin-left: 16px;">
+                <i class="fas fa-tag"></i> {{ order.coupon_code }} ({{ order.discount }}% off)
+            </span>
+            {% endif %}
+        </div>
+        <div class="order-total">
+            Total: <span style="background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${{ "%.2f"|format(order.total) }}</span>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="empty-state fade-in">
+    <i class="fas fa-box-open"></i>
+    <h3>No orders found</h3>
+    <p>Orders will appear here when customers place them.</p>
+</div>
+{% endfor %}
+{% endblock %}

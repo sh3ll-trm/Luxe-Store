@@ -1,0 +1,78 @@
+{% extends "admin/base.html" %}
+{% block title %}Manage Reviews{% endblock %}
+
+{% block admin_content %}
+<div class="admin-page-header">
+    <div>
+        <h1>Reviews</h1>
+        <p>Moderate customer reviews</p>
+    </div>
+</div>
+
+<div class="admin-table-wrapper fade-in">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Product</th>
+                <th>Rating</th>
+                <th>Comment</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for review in reviews %}
+            <tr>
+                <td style="font-weight: 500;">{{ review.username }}</td>
+                <td>{{ review.product_name }}</td>
+                <td>
+                    <div class="stars">
+                        {% for i in range(1, 6) %}
+                            {% if i <= review.rating %}
+                            <i class="fas fa-star"></i>
+                            {% else %}
+                            <i class="far fa-star empty"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </td>
+                <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    {{ review.comment or '—' }}
+                </td>
+                <td>
+                    {% if review.approved %}
+                    <span class="order-status delivered">Approved</span>
+                    {% else %}
+                    <span class="order-status pending">Pending</span>
+                    {% endif %}
+                </td>
+                <td style="color: var(--text-muted); font-size: 0.85rem;">{{ review.created_at }}</td>
+                <td>
+                    <div class="table-actions">
+                        {% if not review.approved %}
+                        <form action="{{ url_for('admin_approve_review', review_id=review.id) }}" method="POST">
+                            <button type="submit" class="btn btn-success btn-sm" title="Approve">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                        <form action="{{ url_for('admin_delete_review', review_id=review.id) }}" method="POST"
+                              onsubmit="return confirm('Delete this review?');">
+                            <button type="submit" class="btn btn-danger btn-sm" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">No reviews yet</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

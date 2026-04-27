@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}PayPal Payment — LUXE Store{% endblock %}
+
+{% block content %}
+<div class="auth-page" style="padding-top: 120px;">
+    <div style="width: 100%; max-width: 520px;">
+        <div class="glass-card fade-in" style="padding: 36px;">
+            <div style="text-align: center; margin-bottom: 28px;">
+                <i class="fab fa-paypal" style="font-size: 3rem; color: #003087;"></i>
+                <h2 style="margin-top: 12px;">Pay with PayPal</h2>
+                <p style="color: var(--text-secondary); font-size: 0.95rem;">Complete your payment securely via PayPal</p>
+            </div>
+
+            <div class="cart-summary-total" style="margin-bottom: 28px; padding: 16px; background: var(--bg-glass); border-radius: 12px;">
+                <span>Total Amount</span>
+                <span class="amount" style="font-size: 1.5rem;">${{ "%.2f"|format(total) }}</span>
+            </div>
+
+            <!-- PayPal Button Container -->
+            <div id="paypal-button-container"></div>
+
+            <!-- Loading State -->
+            <div id="paypal-loading" style="text-align: center; padding: 20px;">
+                <div class="spinner" style="width: 40px; height: 40px; border: 3px solid var(--border-subtle); border-top-color: var(--accent-primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+                <p style="color: var(--text-muted); margin-top: 12px; font-size: 0.9rem;">Loading PayPal...</p>
+            </div>
+
+            <!-- Status Messages -->
+            <div id="paypal-result" style="display: none; text-align: center; padding: 24px;">
+                <div id="paypal-success" style="display: none;">
+                    <i class="fas fa-check-circle" style="font-size: 3rem; color: var(--success);"></i>
+                    <h3 style="margin-top: 12px;">Payment Successful!</h3>
+                    <p style="color: var(--text-secondary);">Redirecting to your orders...</p>
+                </div>
+                <div id="paypal-error" style="display: none;">
+                    <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--error);"></i>
+                    <h3 style="margin-top: 12px;">Payment Failed</h3>
+                    <p id="paypal-error-msg" style="color: var(--text-secondary);"></p>
+                    <a href="{{ url_for('checkout') }}" class="btn btn-primary" style="margin-top: 16px;">
+                        <i class="fas fa-arrow-left"></i> Try Again
+                    </a>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="{{ url_for('payment_cancel') }}" style="color: var(--text-muted); font-size: 0.85rem;">
+                    <i class="fas fa-arrow-left"></i> Cancel & Return to Checkout
+                </a>
+            </div>
+        </div>
+
+        <!-- Trust Badges -->
+        <div style="display: flex; justify-content: center; gap: 24px; margin-top: 24px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-muted);">
+                <i class="fas fa-shield-alt" style="color: var(--success);"></i> Secure Payment
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-muted);">
+                <i class="fas fa-lock" style="color: var(--accent-primary);"></i> Encrypted
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-muted);">
+                <i class="fab fa-paypal" style="color: #003087;"></i> Buyer Protection
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+</style>
+
+<!-- PayPal JS SDK -->
+<script src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&currency={{ currency }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loadingEl = document.getElementById('paypal-loading');
+    const resultEl = document.getElementById('paypal-result');
+    const successEl = document.getElementById('paypal-success');
+    const errorEl = document.getElementById('paypal-error');
+    const errorMsgEl = document.getElementById('paypal-error-msg');
+    const buttonContainer = document.getElementById('paypal-button-container');
+
+    loadingEl.style.display = 'none';
+
+    paypal.Buttons({
+        style: {
+            layout: 'vertical',
+            color: 'blue',
+            shape: 'pill',
+            label: 'pay',
+            height: 48,
+        },
+        createOrder: function() {
+            return fetch('/api/paypal/create-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            }).then(function(res) {
+                return res.json();
+            }).then(function(data) {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                return data.id;
+            });
+        },
+        onApprove: function(data) {
+            buttonContainer.style.display = 'none';
+            loadingEl.style.display = 'block';
+            loadingEl.querySelector('p').textContent = 'Processing payment...';
+
+            return fetch('/api/paypal/capture-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderID: data.orderID })
+            }).then(function(res) {
+                return res.json();
+            }).then(function(captureData) {
+                loadingEl.style.display = 'none';
+                resultEl.style.display = 'block';
+
+                if (captureData.success) {
+                    successEl.style.display = 'block';
+                    setTimeout(function() {
+                        window.location.href = '/orders';
+                    }, 2000);
+                } else {
+                    errorEl.style.display = 'block';
+                    errorMsgEl.textContent = captureData.error || 'Something went wrong.';
+                }
+            });
+        },
+        onError: function(err) {
+            buttonContainer.style.display = 'none';
+            loadingEl.style.display = 'none';
+            resultEl.style.display = 'block';
+            errorEl.style.display = 'block';
+            errorMsgEl.textContent = err.message || 'Something went wrong with PayPal.';
+        },
+        onCancel: function() {
+            window.location.href = '/payment/cancel';
+        }
+    }).render('#paypal-button-container');
+});
+</script>
+{% endblock %}
+
+{% block footer %}{% endblock %}

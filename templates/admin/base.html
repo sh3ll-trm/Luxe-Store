@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Dashboard{% endblock %} — LUXE Store</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="flash-msg {{ category }}">
+            {% if category == 'success' %}<i class="fas fa-check-circle"></i>
+            {% elif category == 'error' %}<i class="fas fa-exclamation-circle"></i>
+            {% elif category == 'warning' %}<i class="fas fa-exclamation-triangle"></i>
+            {% else %}<i class="fas fa-info-circle"></i>{% endif %}
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="admin-sidebar-header">
+                <h2><i class="fas fa-gem"></i> LUXE Admin</h2>
+                <p>Welcome, {{ session.get('admin_username', 'Admin') }}</p>
+            </div>
+            <ul class="admin-nav">
+                <li><a href="{{ url_for('admin_dashboard') }}" class="{% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
+                    <i class="fas fa-chart-pie"></i> Dashboard
+                </a></li>
+                <li><a href="{{ url_for('admin_products') }}" class="{% if request.endpoint in ('admin_products',) %}active{% endif %}">
+                    <i class="fas fa-box"></i> Products
+                </a></li>
+                <li><a href="{{ url_for('admin_categories') }}" class="{% if request.endpoint in ('admin_categories',) %}active{% endif %}">
+                    <i class="fas fa-tags"></i> Categories
+                </a></li>
+                <li><a href="{{ url_for('admin_orders') }}" class="{% if request.endpoint in ('admin_orders',) %}active{% endif %}">
+                    <i class="fas fa-truck"></i> Orders
+                </a></li>
+                <li><a href="{{ url_for('admin_users') }}" class="{% if request.endpoint in ('admin_users',) %}active{% endif %}">
+                    <i class="fas fa-users"></i> Users
+                </a></li>
+                <li><a href="{{ url_for('admin_coupons') }}" class="{% if request.endpoint in ('admin_coupons',) %}active{% endif %}">
+                    <i class="fas fa-ticket-alt"></i> Coupons
+                </a></li>
+                <li><a href="{{ url_for('admin_reviews') }}" class="{% if request.endpoint in ('admin_reviews',) %}active{% endif %}">
+                    <i class="fas fa-star"></i> Reviews
+                </a></li>
+                <li><a href="{{ url_for('admin_analytics') }}" class="{% if request.endpoint in ('admin_analytics',) %}active{% endif %}">
+                    <i class="fas fa-chart-bar"></i> Analytics
+                </a></li>
+                <li><a href="{{ url_for('admin_settings') }}" class="{% if request.endpoint in ('admin_settings',) %}active{% endif %}">
+                    <i class="fas fa-cog"></i> Settings
+                </a></li>
+                <li style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
+                    <a href="{{ url_for('index') }}"><i class="fas fa-store"></i> View Store</a>
+                </li>
+                <li><a href="{{ url_for('admin_logout') }}"><i class="fas fa-sign-out-alt"></i> Log Out</a></li>
+            </ul>
+        </aside>
+
+        <!-- Content -->
+        <main class="admin-content">
+            {% block admin_content %}{% endblock %}
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

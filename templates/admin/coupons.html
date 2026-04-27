@@ -1,0 +1,102 @@
+{% extends "admin/base.html" %}
+{% block title %}Manage Coupons{% endblock %}
+
+{% block admin_content %}
+<div class="admin-page-header">
+    <div>
+        <h1>Coupons</h1>
+        <p>Create and manage discount codes</p>
+    </div>
+    <button class="btn btn-primary" data-modal="addCouponModal">
+        <i class="fas fa-plus"></i> Create Coupon
+    </button>
+</div>
+
+<div class="admin-table-wrapper fade-in">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Discount</th>
+                <th>Usage</th>
+                <th>Status</th>
+                <th>Expires</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for coupon in coupons %}
+            <tr>
+                <td>
+                    <span style="background: var(--bg-glass-strong); padding: 4px 12px; border-radius: 6px; font-weight: 600; font-family: monospace; color: var(--text-primary);">
+                        {{ coupon.code }}
+                    </span>
+                </td>
+                <td style="color: var(--accent-secondary); font-weight: 600;">{{ coupon.discount_percent }}%</td>
+                <td>{{ coupon.used }} / {{ coupon.max_uses }}</td>
+                <td>
+                    {% if coupon.active %}
+                    <span class="order-status delivered">Active</span>
+                    {% else %}
+                    <span class="order-status cancelled">Inactive</span>
+                    {% endif %}
+                </td>
+                <td style="color: var(--text-muted); font-size: 0.85rem;">
+                    {{ coupon.expires_at or 'Never' }}
+                </td>
+                <td>
+                    <div class="table-actions">
+                        <form action="{{ url_for('admin_toggle_coupon', coupon_id=coupon.id) }}" method="POST">
+                            <button type="submit" class="btn btn-outline btn-sm" title="Toggle Status">
+                                <i class="fas fa-toggle-{{ 'on' if coupon.active else 'off' }}"></i>
+                            </button>
+                        </form>
+                        <form action="{{ url_for('admin_delete_coupon', coupon_id=coupon.id) }}" method="POST"
+                              onsubmit="return confirm('Delete this coupon?');">
+                            <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">No coupons yet</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Add Coupon Modal -->
+<div class="modal-overlay" id="addCouponModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Create Coupon</h2>
+            <button class="modal-close"><i class="fas fa-times"></i></button>
+        </div>
+        <form action="{{ url_for('admin_add_coupon') }}" method="POST">
+            <div class="form-group">
+                <label class="form-label">Coupon Code</label>
+                <input type="text" name="code" class="form-input" placeholder="e.g. SAVE20" style="text-transform: uppercase;" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Discount (%)</label>
+                    <input type="number" name="discount_percent" class="form-input" min="1" max="100" step="1" placeholder="20" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Max Uses</label>
+                    <input type="number" name="max_uses" class="form-input" min="1" value="100" placeholder="100">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Expires At (optional)</label>
+                <input type="datetime-local" name="expires_at" class="form-input">
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">
+                <i class="fas fa-plus"></i> Create Coupon
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

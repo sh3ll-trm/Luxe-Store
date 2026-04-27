@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}My Profile — LUXE Store{% endblock %}
+
+{% block content %}
+<section class="profile-page">
+    <div class="container">
+        <h1 class="section-title fade-in">My Profile</h1>
+        <p class="section-subtitle fade-in">Manage your account information</p>
+
+        <div class="profile-grid">
+            <!-- Profile Info -->
+            <div class="profile-card fade-in">
+                <h2><i class="fas fa-user"></i> Account Details</h2>
+                <form action="{{ url_for('profile') }}" method="POST">
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <input type="text" class="form-input" value="{{ user.username }}" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-input" value="{{ user.email }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="full_name" class="form-input" value="{{ user.full_name or '' }}" placeholder="Your full name">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Address</label>
+                        <textarea name="address" class="form-textarea" placeholder="Your shipping address">{{ user.address or '' }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone</label>
+                        <input type="tel" name="phone" class="form-input" value="{{ user.phone or '' }}" placeholder="+1 234 567 890">
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </form>
+            </div>
+
+            <!-- Recent Orders -->
+            <div class="fade-in fade-in-delay-1">
+                <div class="profile-card" style="margin-bottom: 24px;">
+                    <h2><i class="fas fa-box"></i> Recent Orders</h2>
+                    {% if orders %}
+                    {% for order in orders %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+                        <div>
+                            <div style="font-weight: 600;">Order #{{ order.id }}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">{{ order.created_at }}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span class="order-status {{ order.status|lower }}">{{ order.status }}</span>
+                            <div style="font-weight: 600; color: var(--accent-secondary); margin-top: 4px;">${{ "%.2f"|format(order.total) }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <a href="{{ url_for('orders') }}" class="btn btn-outline btn-full" style="margin-top: 16px;">
+                        View All Orders
+                    </a>
+                    {% else %}
+                    <p style="color: var(--text-muted); text-align: center; padding: 20px 0;">No orders yet.</p>
+                    {% endif %}
+                </div>
+
+                <div class="profile-card">
+                    <h2><i class="fas fa-cog"></i> Quick Actions</h2>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <a href="{{ url_for('orders') }}" class="btn btn-outline btn-full">
+                            <i class="fas fa-box"></i> View All Orders
+                        </a>
+                        <a href="{{ url_for('wishlist') }}" class="btn btn-outline btn-full">
+                            <i class="fas fa-heart"></i> My Wishlist
+                        </a>
+                        <a href="{{ url_for('cart') }}" class="btn btn-outline btn-full">
+                            <i class="fas fa-shopping-bag"></i> My Cart
+                        </a>
+                        <a href="{{ url_for('logout') }}" class="btn btn-danger btn-full">
+                            <i class="fas fa-sign-out-alt"></i> Log Out
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
