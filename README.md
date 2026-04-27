@@ -104,8 +104,8 @@ LUXE-Store/
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/luxe-store.git
-cd luxe-store
+git clone https://github.com/sh3ll-trm/Luxe-Store
+cd Luxe-Store
 
 # Install dependencies
 pip install -r requirements.txt
